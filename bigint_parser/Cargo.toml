@@ -1,0 +1,32 @@
+[package]
+name = "bigint_parser"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+clap = "2.33"
+toml = "0.5"
+noir-bignum-paramgen = { version = "0.1.2" }
+hex = { version = "0.4" }
+rand = { version = "0.8.5" }
+num-bigint = { version = "0.8.2", features = [
+    "i128",
+    "prime",
+    "zeroize",
+], default-features = false, package = "num-bigint-dig" }
+num-traits = { version = "0.2.9", default-features = false, features = [
+    "libm",
+] }
+num-integer = { version = "0.1.39", default-features = false }
+rand_core = { version = "0.6.4", default-features = false }
+hex-literal = "0.4.1"
+rand_xorshift = "0.3"
+rand_chacha = "0.3"
+generic-array = { version = "1.1.0" }
+typenum = { version = "1.17.0" }
+[features]
+default = ["std", "u64_digit"]
+getrandom = ["rand_core/getrandom"]
+nightly = ["num-bigint/nightly"]
+u64_digit = ["num-bigint/u64_digit"]
+std = ["rand_core/std"]

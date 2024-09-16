@@ -1,0 +1,5 @@
+/lib/src/secp384r1_bis.nr
+.vscode
+target
+.DS_Store
+Cargo.lock

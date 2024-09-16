@@ -1,0 +1,8 @@
+[package]
+name = "noir_ecdsa"
+type = "lib"
+authors = [""]
+compiler_version = ">=0.33.0"
+
+[dependencies]
+bignum = { path = "/Users/madztheo/Documents/Ocelots/libs/noir-bignum"}
