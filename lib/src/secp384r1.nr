@@ -18,16 +18,19 @@ fn to_u64<BN>(x: BN) -> u64 where BN: BigNumTrait {
     x.get_limb(0) as u64
 }
 
-fn to_le_bits(x: Secp384r1Fr) -> [u1; 384] {
-    let mut bits = [0; 384];
-    let mut tmp = x;
-    // TODO: This is not correct, need to fix it
-    // It does not consider the last bit
-    for i in 0..383 {
-        if !tmp.eq(ZERO_FR) {
-            let (q, r) = tmp.udiv_mod(from_u64(2));
-            bits[i] = to_u64(r) as u1;
-            tmp = q;
+fn to_le_bits<let TOTAL_BITS: u32, BN>(bn: BN) -> [u1; TOTAL_BITS] where BN: BigNumTrait {
+    let mut bits: [u1; TOTAL_BITS] = [0; TOTAL_BITS];
+    // Loop through limbs
+    for l in 0..(TOTAL_BITS/120) as u64 {
+        let limb = bn.get_limb(l);
+        let limb_bytes: [u8; 15] = limb.to_le_bytes();
+        // Loop through limb bytes (120 bits per limb = 15 bytes)
+        for j in 0..15 {
+            let limb_byte = limb_bytes[j];
+            // Loop through bits and extract each one
+            for k in 0..8 {
+                bits[(l * 120) as u64 + (j * 8 + k) as u64] = ((limb_byte >> k) & 1) as u1;
+            }
         }
     }
     bits
@@ -344,6 +347,21 @@ fn test_ec_mul() {
     let a = SECP384R1_CURVE.mul(from_u64::<Secp384r1Fr>(1), SAMPLE_POINT_A);
     assert(SECP384R1_CURVE.contains(a));
     println(f"a: {a}");
+}
+
+#[test]
+fn test_to_le_bits() {
+    let r: Secp384r1Fr = from_u64::<Secp384r1Fr>(2048);
+    let bits: [u1; 480] = to_le_bits(r);
+    assert(bits == [0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+                    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+                    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+                    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+                    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+                    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+                    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+                    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]);
+    println(f"bits: {bits}");
 }
 
 // Runs into a stack overflow error
