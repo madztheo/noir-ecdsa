@@ -28,6 +28,7 @@ impl CurveParamsTrait<Secp384r1Fq> for Secp384r1Params {
         [one, two]
     }
 
+    // Hash to curve point generated with the message "P-384 Offset Generator"
     fn offset_generator() -> [Secp384r1Fq; 2] {
         [
             BigNum {
@@ -43,6 +44,7 @@ impl CurveParamsTrait<Secp384r1Fq> for Secp384r1Params {
         ]
     }
 
+    // offset generator * 2^((NScalarSlices - 1) * 4) = offset generator * 2^380
     fn offset_generator_final() -> [Secp384r1Fq; 2] {
         [
             BigNum {
@@ -181,9 +183,6 @@ unconstrained fn verify_secp384r1_ecdsa(
     let u_1: ScalarField<96> = ScalarField::from_bignum(e.mul(w));
     let u_2: ScalarField<96> = ScalarField::from_bignum(r.mul(w));
 
-    println(f"u_1: {u_1}");
-    println(f"u_2: {u_2}");
-
     // Convert public key to jacobian coordinates
     let public_key: Secp384r1J = CurveJ { x: public_key_x, y: public_key_y, z: BigNum::one(), is_infinity: false };
 
@@ -204,9 +203,6 @@ unconstrained fn verify_secp384r1_ecdsa(
 
     // 5. Compute the point R = u1G + u2Q
     let (r_point, _) = CurveJ::msm([gen, public_key], [u_1, u_2]);
-    /*let (U1G, _) = gen.mul(u_1);
-    let (U2Q, _) = public_key.mul(u_2);
-    let (r_point, _) = U1G.add(U2Q);*/
 
     println(f"r: {r}");
     println(f"r_point: {r_point}");
@@ -217,7 +213,7 @@ unconstrained fn verify_secp384r1_ecdsa(
 
     let r_point_x_as_fr: Secp384r1Fr = BigNum::from_array(affine_r_point.x.limbs);
 
-    // 6. The signature is valid if r ≡ R.x (mod n)
+    // 6. The signature is valid if r = R.x (mod n)
     // Need to have them in the same field to do the comparison
     r_point_x_as_fr.eq(r)
 }
@@ -277,17 +273,25 @@ fn test_ec_mul() {
     }));
 }
 
-unconstrained fn test_ec_msm_impl() -> Secp384r1J {
+#[test]
+fn test_ec_msm() {
     let one: Secp384r1Fr = BigNum::from_array([1, 0, 0, 0]);
     let scalar: ScalarField<96> = ScalarField::from_bignum(one);
     let (result, _) = CurveJ::msm([SAMPLE_POINT_A, SAMPLE_POINT_B], [scalar, scalar]);
-    result
-}
-
-#[test]
-fn test_ec_msm() {
-    let result = test_ec_msm_impl();
+    let expected_result: Secp384r1J = CurveJ {
+        x: BigNum {
+            limbs: [0xbe0ce3ebe570e0ccea732de87d5a6d, 0x353bf75dac182fa9d5eddc6abb14b8, 0x1177d4ae9d652e50a2fe6ec5ddb84b, 0xa87524]
+        },
+        y: BigNum {
+            limbs: [0x19ce2d0b33c38f04f12e27b8408364, 0x4775a33829c426de4a449c4e29278e, 0xefe053bf776ff1e169a24dc5c909c7, 0x9e4802]
+        },
+        z: BigNum {
+            limbs: [0x01, 0x00, 0x00, 0x00]
+        },
+        is_infinity: false
+    };
     println(f"result: {result}");
+    assert(result.eq(expected_result));
 }
 
 // Runs into a stack overflow error
