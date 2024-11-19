@@ -1,0 +1,10 @@
+[package]
+name = "noir_ecdsa_example"
+type = "bin"
+authors = [""]
+compiler_version = ">=0.36.0"
+
+[dependencies]
+bignum = {tag = "v0.4.1", git = "https://github.com/noir-lang/noir-bignum"}
+bigcurve = { tag = "main", git = "https://github.com/madztheo/noir_bigcurve" }
+ecdsa = { path = "../lib" }

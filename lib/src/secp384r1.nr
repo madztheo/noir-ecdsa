@@ -42,8 +42,6 @@ pub fn verify_secp384r1_ecdsa<let HASH_BYTE_SIZE: u32>(
     // 5. Compute the point R = u1G + u2Q
     let r_point = BigCurve::msm([gen, public_key], [u_1, u_2]);
 
-    println(f"r: {r}");
-    println(f"r_point: {r_point}");
     let r_point_x = r_point.x;
     let r_point_x_as_fr: Secp384r1Fr = BigNum { limbs: r_point_x.limbs };
     // 6. The signature is valid if r = R.x (mod n)
