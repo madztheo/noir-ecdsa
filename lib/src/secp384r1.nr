@@ -33,6 +33,8 @@ pub fn verify_secp384r1_ecdsa(
 
     // Convert public key to jacobian coordinates
     let public_key = BigCurve { x: public_key_x, y: public_key_y, is_infinity: false };
+    public_key.validate_on_curve();
+
     let gen: BigCurve<Secp384r1Fq, Secp384r1_Params> = BigCurve::one();
 
     // 5. Compute the point R = u1G + u2Q
@@ -60,34 +62,34 @@ fn test_secp384r1_signature_verification() {
     );
     let r: Secp384r1Fr = BigNum {
         limbs: [
-            0xbf06453c0ea6541331d12352f60d26,
-            0x77db270c38cfd184082e3bfaeb919f,
-            0x621ecd5b3e0a8110dd4b9959fd8fda,
-            0xb0570c,
+            0xeb06adc631cd09d17ed3268f65e288,
+            0x4102680df5a59b6fc9f8f38cd01016,
+            0x272042bb400a185ba04fefaa7c05ce,
+            0x680dc4,
         ],
     };
     let s: Secp384r1Fr = BigNum {
         limbs: [
-            0x8e3affaa88802f9a6452f623b626b1,
-            0xdb2a287312a577031ce9f209e84c17,
-            0x73bc5f486a545f9c1f19ec6ac8bcfb,
-            0xdcbfba,
+            0x711084a23ae842fc0e6702c3009784,
+            0xe17e64a3c451466091c4c1aae7550f,
+            0x017a18c55fc11347e0f27fa8fdb958,
+            0x32ec1b,
         ],
     };
     let public_key_x: Secp384r1Fq = BigNum {
         limbs: [
-            0x7eaf8f9cc0a55a3ba2ee33c60ffab2,
-            0x1c7d48b9789e2721519e903e6b3d66,
-            0xfe8be327ca83bd327eeed429c6355b,
-            0x23fc3e,
+            0x4bb414953ec1391fdbc6ea75e0d61a,
+            0xfed1f2c9f9ac404d4bf5c0b267cddb,
+            0xd1031dd17188527bc28ade5c97d23c,
+            0x41b3d3,
         ],
     };
     let public_key_y: Secp384r1Fq = BigNum {
         limbs: [
-            0xa557029ebcac31208fed16f156ee51,
-            0xa6110be2e161bfffd42ae464f00dc8,
-            0x46b9a9867e6ffa84e4c12190862518,
-            0x1cc4a8,
+            0x23db4726c61ec970c07ff770a2b380,
+            0x3270662d9105998b8e26e9575147da,
+            0x33e912de6612af790c627629f33de0,
+            0x4b834d,
         ],
     };
     assert(verify_secp384r1_ecdsa(public_key_x, public_key_y, sha256_hash, (r, s)));

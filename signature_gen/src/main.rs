@@ -1,4 +1,5 @@
 use num_bigint::BigUint;
+use signature::SignerMut;
 use std::env;
 use toml::Value;
 
@@ -48,7 +49,7 @@ fn generate_p384_signature_parameters(msg: &str, as_toml: bool) {
     // c.f. https://www.secg.org/sec1-v2.pdf (Section 2.3.3)
     let public_key_x = public_key_bytes[1..49].to_vec();
     let public_key_y = public_key_bytes[49..97].to_vec();
-    let signature: Signature = signing_key.sign(msg.as_bytes());
+    let (signature, _) = signing_key.sign_prehash_recoverable(&hashed_message).unwrap();
     let (r, s) = signature.split_bytes();
 
     let r_uint: BigUint = BigUint::from_bytes_be(&r);

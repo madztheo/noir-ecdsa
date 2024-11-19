@@ -15,6 +15,7 @@ pub fn verify_secp256r1_ecdsa(
     let (r, s): (Secp256r1Fr, Secp256r1Fr) = signature;
 
     // 2. Convert the message digest to a BigNum
+    // There is a chance that the message digest is higher than the field modulus
     let e: Secp256r1Fr = BigNum::from_be_bytes(message_digest);
 
     // 3. Compute w = s^-1 mod n
@@ -27,6 +28,8 @@ pub fn verify_secp256r1_ecdsa(
     let u_2: ScalarField<SECP256r1_SCALAR_SLICES> = ScalarField::from_bignum(r * w);
 
     let public_key = BigCurve { x: public_key_x, y: public_key_y, is_infinity: false };
+    public_key.validate_on_curve();
+
     let gen: BigCurve<Secp256r1Fq, Secp256r1_Params> = BigCurve::one();
 
     // 5. Compute the point R = u1G + u2Q
