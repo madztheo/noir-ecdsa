@@ -1,26 +1,28 @@
-// Inspired by https://github.com/noir-lang/noir/blob/21425dedcc31287431a4a25589d52d5397e974bc/noir_stdlib/src/ec/swcurve.nr#L190
 use bigcurve::curves::secp384r1::{Secp384r1Fr, Secp384r1Fq, SECP384r1_SCALAR_SLICES};
 use bigcurve::scalar_field::ScalarField;
 use bigcurve::BigCurve;
 use bignum::BigNum;
 use bigcurve::curves::secp384r1::Secp384r1_Params;
 
-// Set as unconstrained for testing purposes
-pub fn verify_secp384r1_ecdsa(
+pub fn verify_secp384r1_ecdsa<let HASH_BYTE_SIZE: u32>(
     public_key_x: Secp384r1Fq,
     public_key_y: Secp384r1Fq,
-    message_digest: [u8; 32],
+    message_digest: [u8; HASH_BYTE_SIZE],
     signature: (Secp384r1Fr, Secp384r1Fr),
 ) -> bool {
     // 1. Unpack the signature (r, s)
     let (r, s): (Secp384r1Fr, Secp384r1Fr) = signature;
 
     // 2. Pad the message digest to 48 bytes and convert to a BigNum
-    let mut message_digest_padded: [u8; 48] = [0; 48];
-    for i in 16..48 {
-        message_digest_padded[i] = message_digest[i - 16];
+    let mut formatted_message_digest: [u8; 48] = [0; 48];
+    let mut startIndex = 0;
+    if HASH_BYTE_SIZE < 48 {
+        startIndex = 48 - HASH_BYTE_SIZE;
     }
-    let e: Secp384r1Fr = BigNum::from_be_bytes(message_digest_padded);
+    for i in startIndex..48 {
+        formatted_message_digest[i] = message_digest[i - startIndex];
+    }
+    let e: Secp384r1Fr = BigNum::from_be_bytes(formatted_message_digest);
 
     // 3. Compute w = s^-1 mod n
     let w = s.__invmod();

@@ -4,19 +4,26 @@ use bigcurve::BigCurve;
 use bignum::BigNum;
 use bigcurve::curves::secp256r1::Secp256r1_Params;
 
-// Set as unconstrained for testing purposes
-pub fn verify_secp256r1_ecdsa(
+pub fn verify_secp256r1_ecdsa<let HASH_BYTE_SIZE: u32>(
     public_key_x: Secp256r1Fq,
     public_key_y: Secp256r1Fq,
-    message_digest: [u8; 32],
+    message_digest: [u8; HASH_BYTE_SIZE],
     signature: (Secp256r1Fr, Secp256r1Fr),
 ) -> bool {
     // 1. Unpack the signature (r, s)
     let (r, s): (Secp256r1Fr, Secp256r1Fr) = signature;
 
-    // 2. Convert the message digest to a BigNum
+    // 2. Pad the message digest to 32 bytes and convert to a BigNum
     // There is a chance that the message digest is higher than the field modulus
-    let e: Secp256r1Fr = BigNum::from_be_bytes(message_digest);
+    let mut formatted_message_digest: [u8; 32] = [0; 32];
+    let mut startIndex = 0;
+    if HASH_BYTE_SIZE < 32 {
+        startIndex = 32 - HASH_BYTE_SIZE;
+    }
+    for i in startIndex..32 {
+        formatted_message_digest[i] = message_digest[i - startIndex];
+    }
+    let e: Secp256r1Fr = BigNum::from_be_bytes(formatted_message_digest);
 
     // 3. Compute w = s^-1 mod n
     let w = s.__invmod();
