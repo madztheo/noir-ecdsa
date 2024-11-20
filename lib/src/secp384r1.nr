@@ -26,7 +26,7 @@ pub fn verify_secp384r1_ecdsa<let HASH_BYTE_SIZE: u32>(
 
     // 3. Compute w = s^-1 mod n
     let w = s.__invmod();
-    // Check that s is in the inverse of w since the previous line is unconstrained
+    // Check that s is the inverse of w since the previous line is unconstrained
     assert(s * w == BigNum::one());
 
     // 4. Compute u1 = ew mod n and u2 = rw mod n
